@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cotizador RoomBeast</title>
+  <meta name="description" content="Cotiza tu plan RoomBeast en 30 segundos. Plataforma B2B de room nights para agencias en LATAM.">
+
+  <style>
+    /* ---------- DESIGN TOKENS ----------
+       Edita estos valores para ajustar branding o pricing por mercado.
+    -------------------------------------- */
+    :root {
+      --color-bg: #f6f8fb;
+      --color-card: #ffffff;
+      --color-text: #1a2230;
+      --color-text-soft: #5a6678;
+      --color-primary: #0c4f6e;        /* RoomBeast deep blue */
+      --color-primary-soft: #e8f1f5;
+      --color-accent: #ff7a3d;         /* CTA orange */
+      --color-accent-hover: #e96528;
+      --color-border: #dfe4ea;
+      --color-success: #1f9d6b;
+      --radius: 14px;
+      --shadow: 0 6px 24px rgba(12, 79, 110, 0.08);
+      --max-width: 980px;
+    }
+
+    /* ---------- RESET / BASE ---------- */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--color-primary); }
+
+    /* ---------- LAYOUT ---------- */
+    header {
+      padding: 22px 24px;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 64px;
+    }
+    .brand img { display: block; height: 100%; width: auto; }
+    @media (max-width: 600px) {
+      .brand { height: 48px; }
+    }
+    .header-link {
+      font-size: 14px;
+      color: var(--color-text-soft);
+      text-decoration: none;
+    }
+    .header-link:hover { color: var(--color-primary); }
+
+    main {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 8px 24px 48px;
+    }
+
+    h1 {
+      font-size: 36px;
+      line-height: 1.15;
+      margin: 24px 0 8px;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      color: var(--color-text-soft);
+      font-size: 17px;
+      margin: 0 0 32px;
+      max-width: 620px;
+    }
+
+    /* ---------- TWO COLUMN CARD ---------- */
+    .calc-wrap {
+      background: var(--color-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+    }
+    @media (max-width: 760px) {
+      .calc-wrap { grid-template-columns: 1fr; }
+    }
+
+    .calc-inputs {
+      padding: 32px;
+      border-right: 1px solid var(--color-border);
+    }
+    @media (max-width: 760px) {
+      .calc-inputs { border-right: none; border-bottom: 1px solid var(--color-border); }
+    }
+
+    .calc-inputs h2 {
+      font-size: 18px;
+      margin: 0 0 22px;
+      color: var(--color-text);
+    }
+
+    /* ---------- SLIDER ---------- */
+    .slider-block { margin-bottom: 26px; }
+    .slider-block:last-child { margin-bottom: 0; }
+    .slider-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .slider-label {
+      font-size: 14px;
+      color: var(--color-text);
+      font-weight: 500;
+    }
+
+    /* ---------- INFO TOOLTIP "i" ---------- */
+    .info-tip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      margin-left: 6px;
+      border-radius: 50%;
+      background: var(--color-text-soft);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: Georgia, "Times New Roman", serif;
+      font-style: italic;
+      cursor: help;
+      position: relative;
+      vertical-align: middle;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .info-tip:hover { background: var(--color-primary); }
+    .info-tip::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 7px 11px;
+      background: var(--color-text);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 500;
+      font-style: normal;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .info-tip::before {
+      content: '';
+      position: absolute;
+      bottom: calc(100% + 3px);
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--color-text);
+      opacity: 0;
+      transition: opacity 0.15s;
+      pointer-events: none;
+    }
+    .info-tip:hover::after,
+    .info-tip:hover::before { opacity: 1; }
+    .slider-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-primary);
+      font-variant-numeric: tabular-nums;
+      min-width: 80px;
+      text-align: right;
+    }
+    .slider-value .unit {
+      font-size: 12px;
+      color: var(--color-text-soft);
+      font-weight: 500;
+      margin-left: 4px;
+    }
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: var(--color-primary-soft);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      background: var(--color-primary);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 6px rgba(12, 79, 110, 0.3);
+      transition: transform 0.1s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      background: var(--color-primary);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 6px rgba(12, 79, 110, 0.3);
+    }
+    .slider-bounds {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--color-text-soft);
+      margin-top: 4px;
+    }
+
+    /* ---------- RESULT PANEL ---------- */
+    .calc-result {
+      padding: 32px;
+      background: linear-gradient(135deg, #f9fbfc 0%, var(--color-primary-soft) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .tier-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--color-primary);
+      color: #fff;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .tier-name {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+    .tier-price {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--color-primary);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .tier-price .currency {
+      font-size: 18px;
+      color: var(--color-text-soft);
+      font-weight: 600;
+      margin-right: 4px;
+    }
+    .tier-price .period {
+      font-size: 16px;
+      color: var(--color-text-soft);
+      font-weight: 500;
+    }
+    .tier-includes {
+      font-size: 14px;
+      color: var(--color-text-soft);
+      margin: 12px 0 20px;
+      line-height: 1.5;
+    }
+    .tier-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 24px;
+    }
+    .tier-features li {
+      font-size: 13px;
+      color: var(--color-text-soft);
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tier-features li::before {
+      content: "✓";
+      color: var(--color-success);
+      font-weight: 700;
+    }
+
+    /* Enterprise variant */
+    .calc-result.is-enterprise .tier-price { font-size: 28px; line-height: 1.2; }
+    .calc-result.is-enterprise .tier-price .currency,
+    .calc-result.is-enterprise .tier-price .period { display: none; }
+
+    /* ---------- CTAs ---------- */
+    .cta-row { display: flex; flex-direction: column; gap: 10px; }
+    .cta {
+      display: inline-block;
+      padding: 13px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      text-align: center;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .cta-primary {
+      background: var(--color-accent);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(255, 122, 61, 0.3);
+    }
+    .cta-primary:hover {
+      background: var(--color-accent-hover);
+      transform: translateY(-1px);
+    }
+    .cta-secondary {
+      background: transparent;
+      color: var(--color-primary);
+      border: 1.5px solid var(--color-primary);
+    }
+    .cta-secondary:hover { background: var(--color-primary-soft); }
+
+    /* ---------- VALUE PROP / 4 PILLARS ---------- */
+    .pillars-section {
+      max-width: var(--max-width);
+      margin: 48px auto 0;
+      padding: 0 24px;
+    }
+    .pillars-intro {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .pillars-intro h2 {
+      font-size: 26px;
+      margin: 0 0 6px;
+      letter-spacing: -0.01em;
+      color: var(--color-text);
+    }
+    .pillars-intro p {
+      color: var(--color-text-soft);
+      font-size: 15px;
+      margin: 0;
+    }
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 760px) {
+      .pillars-grid { grid-template-columns: 1fr; }
+    }
+    .pillar {
+      background: var(--color-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .pillar::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--pillar-color, var(--color-primary));
+    }
+    .pillar.p-1 { --pillar-color: #F58220; }
+    .pillar.p-2 { --pillar-color: #D62828; }
+    .pillar.p-3 { --pillar-color: #F58220; }
+    .pillar.p-4 { --pillar-color: #D62828; }
+    .pillar h3 {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--pillar-color);
+      margin: 0 0 6px;
+      text-transform: uppercase;
+    }
+    .pillar .pillar-sub {
+      font-size: 14px;
+      color: var(--color-text-soft);
+      font-style: italic;
+      margin: 0 0 14px;
+    }
+    .pillar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .pillar li {
+      font-size: 13.5px;
+      color: var(--color-text);
+      padding: 4px 0 4px 16px;
+      position: relative;
+      line-height: 1.5;
+    }
+    .pillar li::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 13px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--pillar-color);
+    }
+
+    /* ---------- BOTTOM SANDBOX FORM ---------- */
+    .sandbox {
+      max-width: var(--max-width);
+      margin: 48px auto 0;
+      padding: 32px 24px;
+      background: var(--color-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--color-border);
+    }
+    .sandbox h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: -0.01em;
+    }
+    .sandbox p {
+      color: var(--color-text-soft);
+      margin: 0 0 18px;
+      font-size: 15px;
+    }
+    .sandbox-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+    }
+    @media (max-width: 600px) {
+      .sandbox-form { grid-template-columns: 1fr; }
+    }
+    .sandbox-form input {
+      padding: 12px 14px;
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .sandbox-form input:focus { border-color: var(--color-primary); }
+    .sandbox-form button {
+      padding: 12px 22px;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .sandbox-form button:hover { background: #093d56; }
+    .sandbox-success {
+      display: none;
+      padding: 16px;
+      background: #e8f7f0;
+      color: var(--color-success);
+      border-radius: 10px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    .sandbox-success.visible { display: block; }
+
+    /* ---------- ENTERPRISE CTA (Empresas) ---------- */
+    .enterprise-cta {
+      max-width: var(--max-width);
+      margin: 24px auto 0;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, #0a4a66 0%, #093d56 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      box-shadow: var(--shadow);
+    }
+    .enterprise-cta__text { flex: 1; }
+    .enterprise-cta__text h3 {
+      margin: 0 0 4px;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+    .enterprise-cta__text p {
+      margin: 0;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .enterprise-cta__btn {
+      padding: 12px 22px;
+      background: #fff;
+      color: #0a4a66;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .enterprise-cta__btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    }
+    @media (max-width: 600px) {
+      .enterprise-cta {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+      }
+      .enterprise-cta__btn { width: 100%; text-align: center; }
+    }
+
+    /* ---------- FOOTER ---------- */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: var(--color-text-soft);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="logo.png" alt="RoomBeast">
+    </div>
+    <a href="https://roombeast.com" class="header-link">← Volver a roombeast.com</a>
+  </header>
+
+  <main>
+    <h1>Cotiza tu plan RoomBeast en 30 segundos</h1>
+    <p class="subtitle">Ajusta los sliders con tu volumen estimado y te mostramos el plan recomendado y el precio aproximado para tu agencia.</p>
+
+    <div class="calc-wrap">
+      <!-- INPUTS COLUMN -->
+      <div class="calc-inputs">
+        <h2>Tu volumen estimado</h2>
+
+        <div class="slider-block">
+          <div class="slider-row">
+            <span class="slider-label">Transacciones por mes</span>
+            <span class="slider-value"><span id="trxValue">500</span><span class="unit">trx</span></span>
+          </div>
+          <input type="range" id="trx" min="0" max="5000" value="500" step="50">
+          <div class="slider-bounds"><span>0</span><span>5.000+</span></div>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-row">
+            <span class="slider-label">Hoteles que reservas regularmente<span class="info-tip" data-tip="Donde se concentra el 80% de tus reservas">i</span></span>
+            <span class="slider-value"><span id="htlsValue">75</span><span class="unit">hoteles</span></span>
+          </div>
+          <input type="range" id="htls" min="0" max="500" value="75" step="5">
+          <div class="slider-bounds"><span>0</span><span>500+</span></div>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-row">
+            <span class="slider-label">Usuarios con acceso</span>
+            <span class="slider-value"><span id="usrValue">5</span><span class="unit">usuarios</span></span>
+          </div>
+          <input type="range" id="usr" min="0" max="50" value="5" step="1">
+          <div class="slider-bounds"><span>0</span><span>50+</span></div>
+        </div>
+      </div>
+
+      <!-- RESULT COLUMN -->
+      <div class="calc-result" id="resultPanel">
+        <div>
+          <div class="tier-badge">Plan recomendado</div>
+          <div class="tier-name" id="tierName">Starter</div>
+          <div class="tier-price">
+            <span class="currency">USD</span><span id="tierPrice">900</span><span class="period"> / mes</span>
+          </div>
+          <div class="tier-includes" id="tierIncludes">Incluye 200 transacciones, 25 hoteles activos y 3 usuarios.</div>
+          <ul class="tier-features">
+            <li>1.200+ hoteles en LATAM con tarifas B2B activadas</li>
+            <li>Reembolsable 24h antes + desayuno incluido</li>
+            <li>Sistema de aprobaciones y facturación centralizada</li>
+          </ul>
+        </div>
+
+        <div class="cta-row">
+          <a id="ctaDemo" href="https://meetings.hubspot.com/juan-carlos110/roombeast-demo-15-min" class="cta cta-primary" target="_blank" rel="noopener">Agendar demo de 15 min →</a>
+          <a id="ctaSandbox" href="#sandbox" class="cta cta-secondary">Probar sandbox gratis</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- VALUE PROP / 4 PILLARS -->
+    <section class="pillars-section">
+      <div class="pillars-intro">
+        <h2>Por qué agencias B2B en LATAM eligen RoomBeast</h2>
+        <p>1.200+ hoteles · 100+ compradores B2B activos · Chile, Colombia y Perú</p>
+      </div>
+      <div class="pillars-grid">
+        <div class="pillar p-1">
+          <h3>Inventario y tarifas</h3>
+          <p class="pillar-sub">El stock más grande de hoteles B2B en LATAM</p>
+          <ul>
+            <li>1.200+ hoteles online en Chile, Colombia y Perú</li>
+            <li>Mejores tarifas del mercado con margen B2B activado</li>
+            <li>Moneda local con IVA o USD, según prefieras</li>
+            <li>100% reembolsables hasta 24h antes del check-in + desayuno incluido</li>
+            <li>Usa tus tarifas negociadas en nuestros hoteles</li>
+          </ul>
+        </div>
+        <div class="pillar p-2">
+          <h3>Tecnología B2B</h3>
+          <p class="pillar-sub">Construida para B2B, no adaptada de B2C</p>
+          <ul>
+            <li>Reglas de negocio configurables: markups, comisiones, restricciones</li>
+            <li>Sistema de aprobaciones por niveles</li>
+            <li>Perfiles y permisos por usuario</li>
+            <li>Integraciones directas con channel managers y PMS</li>
+            <li>Desarrollos a medida para integrar con tu stack</li>
+          </ul>
+        </div>
+        <div class="pillar p-3">
+          <h3>Operaciones sin fricción</h3>
+          <p class="pillar-sub">Lo que antes era 10 emails ahora son 3 clicks</p>
+          <ul>
+            <li>Reserva 100% en línea sin escribir hotel por hotel</li>
+            <li>Facturación centralizada (una factura mensual)</li>
+            <li>BI y reportería a medida</li>
+            <li>Modelo colaborativo: hoteles, agencias y empresas</li>
+            <li>Tecnología configurable a tu workflow</li>
+          </ul>
+        </div>
+        <div class="pillar p-4">
+          <h3>Soporte y confianza</h3>
+          <p class="pillar-sub">Soporte humano cuando lo necesitas, no un bot</p>
+          <ul>
+            <li>Customer Support personalizado en horario hábil</li>
+            <li>Cobertura full LATAM (mismo equipo)</li>
+            <li>Onboarding asistido sin costo</li>
+            <li>Configuración inicial personalizada</li>
+            <li>Respuesta directa de gente que entiende tu negocio</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SANDBOX FORM -->
+    <section class="sandbox" id="sandbox">
+      <h2>Prueba RoomBeast sin compromiso</h2>
+      <p>Dejanos tu email y armamos un sandbox con datos de prueba en menos de 1 hora hábil. Sin tarjeta, sin contrato.</p>
+      <form class="sandbox-form" id="sandboxForm">
+        <input type="email" name="email" placeholder="tu@empresa.com" required>
+        <input type="text" name="company" placeholder="Nombre de tu agencia" required>
+        <button type="submit">Quiero el sandbox</button>
+      </form>
+      <div class="sandbox-success" id="sandboxSuccess">
+        ¡Listo! Te llega un email a <strong id="sandboxEmail"></strong> con el acceso a tu sandbox en máximo 1 hora hábil.
+      </div>
+    </section>
+
+    <!-- EMPRESAS CTA -->
+    <section class="enterprise-cta">
+      <div class="enterprise-cta__text">
+        <h3>¿Eres una empresa con corporate travel?</h3>
+        <p>Este cotizador es para agencias y mayoristas. Si necesitas RoomBeast para gestionar los viajes de tu empresa (política de viaje, factura única, autorización por flujo), contacta a ventas para armar una propuesta a medida.</p>
+      </div>
+      <a href="https://roombeast.com/soy-empresa.html#contacto" class="enterprise-cta__btn">Contactar a ventas →</a>
+    </section>
+  </main>
+
+  <footer>
+    RoomBeast · Plataforma B2B de room nights para agencias en LATAM · jc@roombeast.com
+  </footer>
+
+  <script>
+    /* ---------- PRICING CONFIG ----------
+       Fórmula continua: price = base + perTrx*T + perHotel*H + perUser*U
+       Editar acá para ajustar por mercado o A/B test.
+
+       Calibración (puntos de referencia):
+         200 trx + 50 htls + 2 usr → ~$1.005/mes
+         1500 trx + 300 htls + 20 usr → ~$2.550/mes
+    --------------------------------------- */
+    const PRICING = {
+      base:     750,    // fee base mensual
+      perTrx:   0.50,   // USD por transacción
+      perHotel: 2.50,   // USD por hotel activo
+      perUser:  15      // USD por usuario adicional
+    };
+
+    // Tier name asignado por bracket de precio calculado (label visual)
+    const TIER_BRACKETS = [
+      { name: 'Starter',    maxPrice: 1200 },
+      { name: 'Growth',     maxPrice: 1900 },
+      { name: 'Scale',      maxPrice: 3000 },
+      { name: 'Enterprise', maxPrice: Infinity }
+    ];
+
+    // Por encima de este precio, ocultar el monto y mostrar rango Enterprise
+    const ENTERPRISE_THRESHOLD = 4000;
+    const ENTERPRISE_RANGE     = '4.000 – 12.000';  // USD/mes mostrado en Enterprise
+
+    // Redondear a múltiplo de N para que el precio mostrado se vea limpio (ej: $1.247 → $1.250)
+    const PRICE_ROUNDING = 10;
+
+    /* ---------- CTA URLs ---------- */
+    const DEMO_URL = 'https://meetings.hubspot.com/juan-carlos110/roombeast-demo-15-min';
+    const SANDBOX_FORM_ENDPOINT = 'https://api.hsforms.com/submissions/v3/integration/submit/51354334/1cafa0f8-fce6-46ef-8be0-d5b295a7a5e4';
+
+    /* ---------- LOGIC ---------- */
+    function calculatePrice(trx, htls, usr) {
+      return PRICING.base + trx * PRICING.perTrx + htls * PRICING.perHotel + usr * PRICING.perUser;
+    }
+
+    function getTierName(price) {
+      for (const t of TIER_BRACKETS) {
+        if (price <= t.maxPrice) return t.name;
+      }
+      return 'Enterprise';
+    }
+
+    function roundPrice(p) {
+      return Math.round(p / PRICE_ROUNDING) * PRICE_ROUNDING;
+    }
+
+    function formatNumber(n) {
+      return n.toLocaleString('es-AR');
+    }
+
+    function updateResult() {
+      const trx  = parseInt(document.getElementById('trx').value, 10);
+      const htls = parseInt(document.getElementById('htls').value, 10);
+      const usr  = parseInt(document.getElementById('usr').value, 10);
+
+      document.getElementById('trxValue').textContent  = formatNumber(trx);
+      document.getElementById('htlsValue').textContent = formatNumber(htls);
+      document.getElementById('usrValue').textContent  = formatNumber(usr);
+
+      const rawPrice = calculatePrice(trx, htls, usr);
+      const price    = roundPrice(rawPrice);
+      const tierName = getTierName(price);
+      const panel    = document.getElementById('resultPanel');
+
+      document.getElementById('tierName').textContent = tierName;
+
+      if (rawPrice > ENTERPRISE_THRESHOLD) {
+        panel.classList.add('is-enterprise');
+        document.getElementById('tierPrice').textContent = 'USD ' + ENTERPRISE_RANGE + ' / mes';
+        document.getElementById('tierIncludes').textContent =
+          'Volumen alto: pricing custom según SLA, integraciones y soporte dedicado. Agenda una demo y armamos cotización exacta.';
+        document.getElementById('ctaDemo').textContent = 'Hablar con ventas →';
+      } else {
+        panel.classList.remove('is-enterprise');
+        document.getElementById('tierPrice').textContent = formatNumber(price);
+        document.getElementById('tierIncludes').textContent =
+          'Para tu volumen: ' + formatNumber(trx) + ' transacciones/mes, ' +
+          formatNumber(htls) + ' hoteles activos y ' +
+          formatNumber(usr) + ' usuario' + (usr === 1 ? '' : 's') + '.';
+        document.getElementById('ctaDemo').textContent = 'Agendar demo de 15 min →';
+      }
+    }
+
+    /* ---------- WIRE UP SLIDERS ---------- */
+    ['trx', 'htls', 'usr'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateResult);
+    });
+    updateResult();
+
+    /* ---------- SANDBOX CTA (scroll + focus) ---------- */
+    document.getElementById('ctaSandbox').addEventListener('click', function(e) {
+      e.preventDefault();
+      const section = document.getElementById('sandbox');
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Highlight visual breve para confirmar que llegamos al lugar
+      section.style.transition = 'box-shadow 0.4s';
+      section.style.boxShadow = '0 0 0 3px rgba(255, 122, 61, 0.5)';
+      setTimeout(() => { section.style.boxShadow = ''; }, 1200);
+      // Focus el campo email después de que termine el scroll
+      setTimeout(() => {
+        const emailInput = document.querySelector('#sandboxForm input[name="email"]');
+        if (emailInput) emailInput.focus();
+      }, 700);
+    });
+
+    /* ---------- SANDBOX FORM SUBMIT ---------- */
+    document.getElementById('sandboxForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = this.email.value.trim();
+      const company = this.company.value.trim();
+
+      if (SANDBOX_FORM_ENDPOINT) {
+        // POST a HubSpot Forms API v3 (Sandbox Request - Cotizador)
+        fetch(SANDBOX_FORM_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fields: [
+              { name: 'email',   value: email },
+              { name: 'company', value: company }
+            ],
+            context: {
+              pageUri:  window.location.href,
+              pageName: 'RoomBeast - Cotizador'
+            }
+          })
+        });
+      } else {
+        // Fallback: mailto al fundador. Reemplazar por HubSpot Forms apenas tengamos formId.
+        const subject = encodeURIComponent('Solicito sandbox RoomBeast - ' + company);
+        const body = encodeURIComponent(
+          'Hola,\n\nQuiero probar RoomBeast en sandbox.\n\n' +
+          'Email: ' + email + '\n' +
+          'Empresa: ' + company + '\n\n' +
+          'Gracias.'
+        );
+        window.location.href = 'mailto:jc@roombeast.com?subject=' + subject + '&body=' + body;
+      }
+
+      document.getElementById('sandboxEmail').textContent = email;
+      document.getElementById('sandboxSuccess').classList.add('visible');
+      this.reset();
+    });
+  </script>
+</body>
+</html>
