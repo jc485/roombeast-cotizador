@@ -6,6 +6,15 @@
   <title>Cotizador RoomBeast</title>
   <meta name="description" content="Cotiza tu plan RoomBeast en 30 segundos. Plataforma B2B de room nights para agencias en LATAM.">
 
+  <!-- Google Ads gtag.js -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18156372116"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-18156372116');
+  </script>
+
   <style>
     /* ---------- DESIGN TOKENS ----------
        Edita estos valores para ajustar branding o pricing por mercado.
@@ -841,9 +850,30 @@
         window.location.href = 'mailto:jc@roombeast.com?subject=' + subject + '&body=' + body;
       }
 
+      // Google Ads conversion event (sandbox form submit)
+      if (typeof gtag === 'function') {
+        gtag('event', 'conversion', {
+          'send_to': 'AW-18156372116/XbqVCMiH3LEcEJSB0dFD',
+          'value': 50.0,
+          'currency': 'USD'
+        });
+      }
+
       document.getElementById('sandboxEmail').textContent = email;
       document.getElementById('sandboxSuccess').classList.add('visible');
       this.reset();
+    });
+
+    /* ---------- DEMO CTA CLICK (Google Ads tracking) ---------- */
+    document.getElementById('ctaDemo').addEventListener('click', function() {
+      if (typeof gtag === 'function') {
+        gtag('event', 'conversion', {
+          'send_to': 'AW-18156372116/XbqVCMiH3LEcEJSB0dFD',
+          'value': 50.0,
+          'currency': 'USD',
+          'transport_type': 'beacon'
+        });
+      }
     });
   </script>
 </body>
