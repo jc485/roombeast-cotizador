@@ -496,6 +496,9 @@
       font-size: 14px;
     }
     .sandbox-success.visible { display: block; }
+    .agenda .meetings-iframe-container { min-height: 660px; margin-top: 8px; }
+    .agenda .agenda-fallback { font-size: 13px; margin: 12px 0 0; }
+    .agenda .agenda-fallback a { color: var(--color-primary); }
 
     /* ---------- ENTERPRISE CTA (Empresas) ---------- */
     .enterprise-cta {
@@ -618,8 +621,8 @@
         </div>
 
         <div class="cta-row">
-          <a id="ctaDemo" href="https://meetings.hubspot.com/juan-carlos110/roombeast-demo-15-min" class="cta cta-primary" target="_blank" rel="noopener">Agendar demo de 15 min →</a>
-          <a id="ctaSandbox" href="#sandbox" class="cta cta-secondary">Probar sandbox gratis</a>
+          <a id="ctaDemo" href="#agenda" class="cta cta-primary">Agendar demo de 30 min →</a>
+          <a id="ctaWhatsapp" href="https://wa.me/56936784091" class="cta cta-secondary" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
         </div>
       </div>
     </div>
@@ -678,19 +681,14 @@
       </div>
     </section>
 
-    <!-- SANDBOX FORM -->
-    <section class="sandbox" id="sandbox">
-      <h2>Prueba RoomBeast sin compromiso</h2>
-      <p>Dejanos tu email y armamos un sandbox con datos de prueba en menos de 1 hora hábil. Sin tarjeta, sin contrato.</p>
-      <form class="sandbox-form" id="sandboxForm">
-        <input type="email" name="email" placeholder="tu@empresa.com" required>
-        <input type="text" name="company" placeholder="Nombre de tu agencia" required>
-        <button type="submit">Quiero el sandbox</button>
-      </form>
-      <div class="sandbox-success" id="sandboxSuccess">
-        ¡Listo! Te llega un email a <strong id="sandboxEmail"></strong> con el acceso a tu sandbox en máximo 1 hora hábil.
-      </div>
+    <!-- AGENDA DE REUNIÓN (HubSpot Meetings) -->
+    <section class="sandbox agenda" id="agenda">
+      <h2>Agenda tu reunión con ventas</h2>
+      <p>Elige el día y la hora que te acomoden. En 30 minutos revisamos tu volumen, te mostramos la plataforma con hoteles reales y te dejamos la cotización exacta.</p>
+      <div class="meetings-iframe-container" data-src="https://meetings.hubspot.com/juan-carlos110/roombeast-demo-15-min?embed=true"></div>
+      <p class="agenda-fallback">¿No carga el calendario? <a href="https://meetings.hubspot.com/juan-carlos110/roombeast-demo-15-min" target="_blank" rel="noopener">Ábrelo aquí</a>.</p>
     </section>
+    <script type="text/javascript" src="https://static.hsappstatic.net/MeetingsEmbed/ex/MeetingsEmbedCode.js"></script>
 
     <!-- EMPRESAS CTA -->
     <section class="enterprise-cta">
@@ -739,7 +737,6 @@
 
     /* ---------- CTA URLs ---------- */
     const DEMO_URL = 'https://meetings.hubspot.com/juan-carlos110/roombeast-demo-15-min';
-    const SANDBOX_FORM_ENDPOINT = 'https://api.hsforms.com/submissions/v3/integration/submit/51354334/1cafa0f8-fce6-46ef-8be0-d5b295a7a5e4';
 
     /* ---------- LOGIC ---------- */
     function calculatePrice(trx, htls, usr) {
@@ -790,7 +787,7 @@
           'Para tu volumen: ' + formatNumber(trx) + ' transacciones/mes, ' +
           formatNumber(htls) + ' hoteles activos y ' +
           formatNumber(usr) + ' usuario' + (usr === 1 ? '' : 's') + '.';
-        document.getElementById('ctaDemo').textContent = 'Agendar demo de 15 min →';
+        document.getElementById('ctaDemo').textContent = 'Agendar demo de 30 min →';
       }
     }
 
@@ -800,78 +797,29 @@
     });
     updateResult();
 
-    /* ---------- SANDBOX CTA (scroll + focus) ---------- */
-    document.getElementById('ctaSandbox').addEventListener('click', function(e) {
+    /* ---------- DEMO CTA (abre el calendario) ---------- */
+    document.getElementById('ctaDemo').addEventListener('click', function(e) {
       e.preventDefault();
-      const section = document.getElementById('sandbox');
+      const section = document.getElementById('agenda');
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // Highlight visual breve para confirmar que llegamos al lugar
       section.style.transition = 'box-shadow 0.4s';
       section.style.boxShadow = '0 0 0 3px rgba(255, 122, 61, 0.5)';
       setTimeout(() => { section.style.boxShadow = ''; }, 1200);
-      // Focus el campo email después de que termine el scroll
-      setTimeout(() => {
-        const emailInput = document.querySelector('#sandboxForm input[name="email"]');
-        if (emailInput) emailInput.focus();
-      }, 700);
     });
 
-    /* ---------- SANDBOX FORM SUBMIT ---------- */
-    document.getElementById('sandboxForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const email = this.email.value.trim();
-      const company = this.company.value.trim();
-
-      if (SANDBOX_FORM_ENDPOINT) {
-        // POST a HubSpot Forms API v3 (Sandbox Request - Cotizador)
-        fetch(SANDBOX_FORM_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fields: [
-              { name: 'email',   value: email },
-              { name: 'company', value: company }
-            ],
-            context: {
-              pageUri:  window.location.href,
-              pageName: 'RoomBeast - Cotizador'
-            }
-          })
-        });
-      } else {
-        // Fallback: mailto al fundador. Reemplazar por HubSpot Forms apenas tengamos formId.
-        const subject = encodeURIComponent('Solicito sandbox RoomBeast - ' + company);
-        const body = encodeURIComponent(
-          'Hola,\n\nQuiero probar RoomBeast en sandbox.\n\n' +
-          'Email: ' + email + '\n' +
-          'Empresa: ' + company + '\n\n' +
-          'Gracias.'
-        );
-        window.location.href = 'mailto:jc@roombeast.com?subject=' + subject + '&body=' + body;
-      }
-
-      // Google Ads conversion event (sandbox form submit)
+    /* ---------- REUNIÓN AGENDADA (HubSpot Meetings -> Google Ads) ---------- */
+    // HubSpot Meetings avisa por postMessage cuando se confirma la reunión.
+    // La conversión se registra al agendar, no al hacer click.
+    let meetingTracked = false;
+    window.addEventListener('message', function(e) {
+      if (!e.origin || e.origin.indexOf('hubspot') === -1) return;
+      if (!e.data || !e.data.meetingBookSucceeded || meetingTracked) return;
+      meetingTracked = true;
       if (typeof gtag === 'function') {
         gtag('event', 'conversion', {
           'send_to': 'AW-18156372116/XbqVCMiH3LEcEJSB0dFD',
           'value': 50.0,
           'currency': 'USD'
-        });
-      }
-
-      document.getElementById('sandboxEmail').textContent = email;
-      document.getElementById('sandboxSuccess').classList.add('visible');
-      this.reset();
-    });
-
-    /* ---------- DEMO CTA CLICK (Google Ads tracking) ---------- */
-    document.getElementById('ctaDemo').addEventListener('click', function() {
-      if (typeof gtag === 'function') {
-        gtag('event', 'conversion', {
-          'send_to': 'AW-18156372116/XbqVCMiH3LEcEJSB0dFD',
-          'value': 50.0,
-          'currency': 'USD',
-          'transport_type': 'beacon'
         });
       }
     });
